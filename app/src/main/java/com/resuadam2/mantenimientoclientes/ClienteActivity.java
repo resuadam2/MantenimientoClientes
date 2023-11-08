@@ -1,6 +1,7 @@
 package com.resuadam2.mantenimientoclientes;
 
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -16,9 +17,10 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
+
 import java.util.ArrayList;
-public class ClienteActivity extends AppCompatActivity implements View.OnClickListener
-{
+
+public class ClienteActivity extends AppCompatActivity implements View.OnClickListener {
     boolean esNuevoCliente;
     int codCliente;
     SQLiteDatabase bd;
@@ -28,7 +30,8 @@ public class ClienteActivity extends AppCompatActivity implements View.OnClickLi
     ImageButton bMapa;
     Button bGuardar;
 
-    @Override protected void onCreate(Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         bd = new AsistenteBD(this).getReadableDatabase();
         codCliente = getIntent().getIntExtra("codCliente", -1);
@@ -39,28 +42,38 @@ public class ClienteActivity extends AppCompatActivity implements View.OnClickLi
         etNombre = (EditText) findViewById(R.id.etNombre);
         etApellidos = (EditText) findViewById(R.id.etApellidos);
         etNIF = (EditText) findViewById(R.id.etNIF);
-        listaProvincias=(Spinner)findViewById(R.id.listaProvincias);
+        listaProvincias = (Spinner) findViewById(R.id.listaProvincias);
         chkVIP = (CheckBox) findViewById(R.id.chkVIP);
-        etLatitud=findViewById(R.id.latitud);
-        etLongitud=findViewById(R.id.longitud);
-        bMapa=findViewById(R.id.bMapa);
+        etLatitud = findViewById(R.id.latitud);
+        etLongitud = findViewById(R.id.longitud);
+        bMapa = findViewById(R.id.bMapa);
         bGuardar = (Button) findViewById(R.id.bGuardar);
         //endregion
         etNIF.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s,int start,int count,int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-            @Override public void afterTextChanged(Editable s) {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
                 etNIF.setTextColor(!Utiles.esNIF(s.toString()) ? Color.RED : Color.BLACK);
             }
         });
         bMapa.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) { VerMapa(); }
+            @Override
+            public void onClick(View v) {
+                VerMapa();
+            }
         });
         bGuardar.setOnClickListener(this);
         setTitle(getString(esNuevoCliente ? R.string.nuevoCliente : R.string.editarCliente));
         bGuardar.setText(getString(esNuevoCliente ? R.string.insertar : R.string.guardar));
-        int codProvincia=-1;
-//codProvincia virtual correspondiente al 1º elemento vacío de la lista de provincias
+        int codProvincia = -1;
+        //codProvincia virtual correspondiente al 1º elemento vacío de la lista de provincias
         if (!esNuevoCliente) {
             Cursor filas = bd.rawQuery("SELECT * FROM Clientes WHERE codCliente=?",
                     new String[]{codCliente + ""});
@@ -77,68 +90,70 @@ public class ClienteActivity extends AppCompatActivity implements View.OnClickLi
                 String NIF = filas.getString(colIndexNIF);
                 codProvincia = filas.getInt(colIndexCodProvincia);
                 boolean VIP = filas.getInt(colIndexVIP) == 1;
-                float latitud=filas.getFloat(colIndexLatitud);
-                float longitud=filas.getFloat(colIndexLongitud);
+                float latitud = filas.getFloat(colIndexLatitud);
+                float longitud = filas.getFloat(colIndexLongitud);
                 etNombre.setText(nombre);
                 etApellidos.setText(apellidos);
                 etNIF.setText(NIF);
                 //la prov. seleccionada se establece después de poblar la lista para aprovechar el bucle
                 chkVIP.setChecked(VIP);
-                etLatitud.setText(latitud+"");
-                etLongitud.setText(longitud+"");
+                etLatitud.setText(latitud + "");
+                etLongitud.setText(longitud + "");
             }
             filas.close();
         }
         //region Lista de Provincias
-        int posProvinciaSeleccionada=0, posActual=0;
+        int posProvinciaSeleccionada = 0, posActual = 0;
         ArrayList<Provincia> alProvincias = new ArrayList<>();
-        alProvincias.add(new Provincia(-1,""));
-// primer elemento en blanco. Comprobar su código.
+        alProvincias.add(new Provincia(-1, ""));
+        // primer elemento en blanco. Comprobar su código.
         Cursor filas = bd.rawQuery("SELECT * FROM Provincias ORDER BY nombre", null);
         int colIndexCodProvincia = filas.getColumnIndex("codProvincia");
         int colIndexNombre = filas.getColumnIndex("nombre");
         while (filas.moveToNext()) {
             posActual++;
             int codProvinciaBD = filas.getInt(colIndexCodProvincia);
-            if(codProvinciaBD==codProvincia) posProvinciaSeleccionada=posActual;
+            if (codProvinciaBD == codProvincia) posProvinciaSeleccionada = posActual;
             String nombreBD = filas.getString(colIndexNombre);
-            alProvincias.add(new Provincia(codProvinciaBD,nombreBD));
+            alProvincias.add(new Provincia(codProvinciaBD, nombreBD));
         }
         filas.close();
         listaProvincias.setAdapter(new ArrayAdapter<Provincia>(this,
-                android.R.layout.simple_list_item_1,alProvincias));
+                android.R.layout.simple_list_item_1, alProvincias));
         listaProvincias.setSelection(posProvinciaSeleccionada);
         //endregion
     }
+
     public void VerMapa() {
-        String latitud=etLatitud.getText().toString();
-        String longitud=etLongitud.getText().toString();
-        String URI="geo:"+latitud+","+longitud+"?z=17";
+        String latitud = etLatitud.getText().toString();
+        String longitud = etLongitud.getText().toString();
+        String URI = "geo:" + latitud + "," + longitud + "?z=17";
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(URI));
         startActivity(intent);
     }
-    @Override public void onClick(View v) { // Guardar
-        String nombre=etNombre.getText().toString().trim();
-        String apellidos=etApellidos.getText().toString().trim();
-        String NIF=etNIF.getText().toString().trim();
-        int codProvincia=((Provincia)listaProvincias.getSelectedItem()).getCodProvincia();
-        String latitud=etLatitud.getText().toString().replace(",",".");
-        String longitud=etLongitud.getText().toString().replace(",",".");
-        Object objCodProvincia=(codProvincia==-1)?null:codProvincia;
+
+    @Override
+    public void onClick(View v) { // Guardar
+        String nombre = etNombre.getText().toString().trim();
+        String apellidos = etApellidos.getText().toString().trim();
+        String NIF = etNIF.getText().toString().trim();
+        int codProvincia = ((Provincia) listaProvincias.getSelectedItem()).getCodProvincia();
+        String latitud = etLatitud.getText().toString().replace(",", ".");
+        String longitud = etLongitud.getText().toString().replace(",", ".");
+        Object objCodProvincia = (codProvincia == -1) ? null : codProvincia;
         //TODO: if(hayErroresEnDatos) { setError - return }
-        if(esNuevoCliente) {
-            String sql="INSERT INTO clientes (nombre,apellidos,NIF,codProvincia,VIP,latitud,longitud)" +
+        if (esNuevoCliente) {
+            String sql = "INSERT INTO clientes (nombre,apellidos,NIF,codProvincia,VIP,latitud,longitud)" +
                     " VALUES (?,?,?,?,?,?,?)";
-            Object[] valores = {nombre,apellidos,NIF,objCodProvincia,
-                    chkVIP.isChecked()?1:0,latitud,longitud};
-            bd.execSQL(sql,valores);
-        }
-        else {
-            String sql="UPDATE Clientes SET nombre=?,apellidos=?,NIF=?,codProvincia=?,VIP=?, " +
+            Object[] valores = {nombre, apellidos, NIF, objCodProvincia,
+                    chkVIP.isChecked() ? 1 : 0, latitud, longitud};
+            bd.execSQL(sql, valores);
+        } else {
+            String sql = "UPDATE Clientes SET nombre=?,apellidos=?,NIF=?,codProvincia=?,VIP=?, " +
                     "latitud=?,longitud=? WHERE codCliente=?";
-            Object[] valores={nombre,apellidos,NIF,objCodProvincia,
-                    chkVIP.isChecked()?1:0,latitud,longitud,codCliente};
-            bd.execSQL(sql,valores);
+            Object[] valores = {nombre, apellidos, NIF, objCodProvincia,
+                    chkVIP.isChecked() ? 1 : 0, latitud, longitud, codCliente};
+            bd.execSQL(sql, valores);
         }
         setResult(RESULT_OK);
         finish();
