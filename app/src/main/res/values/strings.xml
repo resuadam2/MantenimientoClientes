@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">MantenimientoClientes</string>
+    <string name="OperacionRealizada">Operación realizada</string>
+    <string name="nombre">Nombre</string>
+    <string name="apellidos">Apellidos</string>
+    <string name="NIF">NIF</string>
+    <string name="VIP">VIP</string>
+    <string name="latitud">Latitud</string>
+    <string name="longitud">Longitud</string>
+    <string name="guardar">Guardar</string>
+    <string name="nuevoCliente">Nuevo cliente</string>
+    <string name="editarCliente">Editar cliente</string>
+    <string name="insertar">Insertar</string>
+</resources>
